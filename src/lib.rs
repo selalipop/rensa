@@ -57,6 +57,34 @@ impl RMinHash {
     self.hash_values.clone()
   }
 
+  /// Creates a new RMinHash instance from an existing digest.
+  ///
+  /// # Arguments
+  ///
+  /// * `digest` - A vector of u32 values representing an existing MinHash signature
+  /// * `seed` - A seed value for the random number generator
+  ///
+  /// # Returns
+  ///
+  /// A new RMinHash instance with the provided digest
+  ///
+  /// # Panics
+  ///
+  /// Panics if the digest length doesn't match the number of permutations
+  #[classmethod]
+  fn from_digest(_cls: &PyType, digest: Vec<u32>, seed: u64) -> PyResult<Self> {
+    let num_perm = digest.len();
+    let mut rng = StdRng::seed_from_u64(seed);
+    let permutations: Vec<(u64, u64)> =
+      (0..num_perm).map(|_| (rng.gen(), rng.gen())).collect();
+
+    Ok(RMinHash {
+      num_perm,
+      hash_values: digest,
+      permutations,
+    })
+  }
+
   /// Calculates the Jaccard similarity between this MinHash and another.
   ///
   /// # Arguments
